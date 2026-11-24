@@ -2,7 +2,7 @@
 
 A small Rust/Axum HTTP service for the public WiFi GPU 0.17.2 engine. It accepts HC22000 input and a password pattern, stores durable jobs in SQLite, runs one search at a time, and reports progress and Linux/AMD resources. There is no authentication or authorization.
 
-The product is one executable, `wifi-recovery-api`. The engine and its AMD/HIP runtime are separate prerequisites. No Docker files, containers, installers or service definitions are provided. This repository currently exists locally; publication has not been authorized.
+The product is one executable, `wifi-recovery-api`. The engine and its AMD/HIP runtime are separate prerequisites. No Docker files, containers, installers or service definitions are provided. Download the Linux amd64 executable and checksum from [GitHub Releases](https://github.com/securecodelabs/wifi-recovery-api-public/releases).
 
 ## Run
 
@@ -63,4 +63,4 @@ The separate hardware performance gate runs two 67,108,864-candidate searches th
 
 ## Releases
 
-Release publication requires a new explicit user request. The manual release workflow requires an existing matching version tag, runs the checks, validates the executable version, and publishes only the executable and its SHA-256 checksum. No release has been published for this project.
+Release publication requires an explicit user request. The manual release workflow requires an existing matching version tag, runs the checks, validates the executable version, and publishes only the executable and its SHA-256 checksum. The first release, v0.1.0, uses the locally built executable covered by the Radeon validation report; subsequent CI builds may have different binary hashes. Release notes identify the source revision and the published asset checksum.

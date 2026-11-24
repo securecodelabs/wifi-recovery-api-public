@@ -1,6 +1,6 @@
 # Local validation — 2026-11-24
 
-Implementation source: `26d612f5cbb12eb68e8bf56996d860c20cad3965`. Subsequent documentation commits do not change the executable. Version: 0.1.0; Rust: 1.93.0; engine: public WiFi GPU 0.17.2. No GitHub repository, tag or release was created.
+Implementation source: `26d612f5cbb12eb68e8bf56996d860c20cad3965`. Subsequent documentation commits do not change the executable. Version: 0.1.0; Rust: 1.93.0; engine: public WiFi GPU 0.17.2. This report records local validation before repository publication. The v0.1.0 release uses the exact Linux executable identified below; release notes identify the final source revision and hosted CI run.
 
 ## Exact executable
 
@@ -18,7 +18,7 @@ Formatting and all-target/all-feature Clippy passed on Windows and Linux, with w
 
 The ordinary suite passed 13 tests on Windows and 14 on Linux. Four real-engine integration tests and one hardware performance test are intentionally excluded from ordinary tests and were run explicitly. The real-engine cases cover exact input retention, verified recovery, concurrent idempotent submission, restart and deletion tombstones, FIFO queueing, queued/running stops, resume with fresh attempt budgets, limits, exhaustion, corrupt checkpoints, abrupt API termination, prevention of overlapping engines, multiple SSIDs, progress/rate separation and live resource readings. Protocol/storage/resource tests cover result/exit disagreement, timing and stale observations, checkpoint integrity, persistent ownership/history and missing or ambiguous telemetry.
 
-Both applications passed actionlint 1.7.12, zizmor 1.32.0, cargo-audit 0.22.2, cargo-deny 0.22.0 and Gitleaks 8.30.1 locally, plus generated-license notice verification. The API audit covered 228 locked dependencies with no advisories reported on this date. Gitleaks checked both the working tree and local Git history. CI workflows are prepared but have not been run on GitHub.
+Both applications passed actionlint 1.7.12, zizmor 1.32.0, cargo-audit 0.22.2, cargo-deny 0.22.0 and Gitleaks 8.30.1 locally, plus generated-license notice verification. The API audit covered 228 locked dependencies with no advisories reported on this date. Gitleaks checked both the working tree and local Git history. Hosted CI was pending at the time of this local validation; consult the release notes for its subsequent result.
 
 ## Radeon performance acceptance
 

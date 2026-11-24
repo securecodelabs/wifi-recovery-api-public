@@ -1,6 +1,6 @@
 # Development requirements
 
-Implement new Rust code; existing private projects are behavior references only. Do not copy their source or history. Do not create a GitHub repository or push until the user authorizes it. Never store test-host credentials or private captures here.
+Implement new Rust code; existing private projects are behavior references only. Do not copy their source or history. Repository publication and pushes require user authorization; the initial public repository and v0.1.0 release were authorized on 2026-11-24. Never store test-host credentials or private captures here.
 
 Run formatting, all-target Clippy with warnings denied, the four configured complexity lints, relevant tests, release builds, and applicable security/license checks locally before pushing. Use the same rules in CI. Do not suppress complexity failures or increase thresholds to pass.
 
