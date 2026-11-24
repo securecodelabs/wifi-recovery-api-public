@@ -1,0 +1,42 @@
+[package]
+name = "wifi-recovery-api"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.93"
+license = "Apache-2.0"
+publish = false
+description = "Minimal persistent HTTP job API for the WiFi GPU engine"
+
+[dependencies]
+anyhow = "1"
+axum = { version = "0.8", features = ["multipart"] }
+clap = { version = "4", features = ["derive", "env"] }
+fs2 = "0.4"
+hex = "0.4"
+rusqlite = { version = "0.41", features = ["bundled"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+tempfile = "3"
+tokio = { version = "1", features = ["full"] }
+tokio-util = { version = "0.7", features = ["rt"] }
+uuid = { version = "1", features = ["v4", "serde"] }
+
+[target.'cfg(unix)'.dependencies]
+nix = { version = "0.30", features = ["signal", "process"] }
+
+[dev-dependencies]
+reqwest = { version = "0.13", default-features = false, features = ["json", "multipart", "rustls"] }
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+cognitive_complexity = "deny"
+too_many_lines = "deny"
+excessive_nesting = "deny"
+too_many_arguments = "deny"
+
+[profile.release]
+lto = "thin"
+strip = true

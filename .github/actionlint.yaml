@@ -1,0 +1,3 @@
+# The pinned linter's label catalog predates GitHub's Ubuntu 26.04 hosted image.
+self-hosted-runner:
+  labels: [ubuntu-26.04]

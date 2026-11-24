@@ -1,0 +1,3 @@
+* text=auto eol=lf
+# Preserve capture byte identity, including original CRLF endings.
+*.hc22000 -text whitespace=cr-at-eol
