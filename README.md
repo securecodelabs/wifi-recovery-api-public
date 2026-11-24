@@ -61,6 +61,8 @@ The separate hardware performance gate runs two 67,108,864-candidate searches th
 
 [Quality requirements](docs/quality.md) describe local security, license and complexity checks. [Dependency notices](THIRD_PARTY_NOTICES.md) are embedded in the executable. Code is licensed under Apache-2.0.
 
+The [three-round review report](docs/review-20261124.md) records subsequent local fixes, regressions, packaged-executable tests and fresh Radeon measurements separately from the original release validation.
+
 ## Releases
 
 Release publication requires an explicit user request. The manual release workflow requires an existing matching version tag, runs the checks, validates the executable version, and publishes only the executable and its SHA-256 checksum. The first release, v0.1.0, uses the locally built executable covered by the Radeon validation report; subsequent CI builds may have different binary hashes. Release notes identify the source revision and the published asset checksum.
