@@ -61,7 +61,7 @@ The separate hardware performance gate runs two 67,108,864-candidate searches th
 
 [Quality requirements](docs/quality.md) describe local security, license and complexity checks. [Dependency notices](THIRD_PARTY_NOTICES.md) are embedded in the executable. Code is licensed under Apache-2.0.
 
-The [three-round review report](docs/review-20261124.md) records subsequent local fixes, regressions, packaged-executable tests and fresh Radeon measurements separately from the original release validation.
+The [three-round review report](docs/review-20261124.md) records the fixes included in v0.1.1, regressions, packaged-executable tests and fresh Radeon measurements separately from the original release validation. See the [changelog](CHANGELOG.md) for release changes.
 
 ## Releases
 
