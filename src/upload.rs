@@ -117,6 +117,10 @@ async fn receive(app: &App, mut body: Multipart) -> Result<Upload> {
                     bytes.extend_from_slice(&chunk);
                 }
                 let value: Search = serde_json::from_slice(&bytes)?;
+                ensure!(
+                    value.runtime_seconds <= 86400,
+                    "Runtime must be 0-86400 seconds (0 is unlimited)"
+                );
                 pattern::preview(&value.pattern)?;
                 search = Some(value);
             }

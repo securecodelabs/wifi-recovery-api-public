@@ -44,6 +44,8 @@ jobs:
           $hash = (Get-FileHash dist/wifi-recovery-api-linux-amd64 -Algorithm SHA256).Hash.ToLowerInvariant()
           "$hash  wifi-recovery-api-linux-amd64" | Set-Content dist/wifi-recovery-api-linux-amd64.sha256 -Encoding utf8NoBOM
           "Source: $($env:SOURCE_SHA)`nRust 1.93.0; Linux amd64. Native executable with embedded license notices (--licenses). CPU contract checks passed; hosted CI does not test AMD hardware." | Set-Content dist/release-notes.md -Encoding utf8NoBOM
+      - name: Test the exact packaged API with the real engine
+        run: bash .github/engine-contract.sh dist/wifi-recovery-api-linux-amd64
       - name: Publish immutable assets
         env:
           GH_TOKEN: ${{ github.token }}

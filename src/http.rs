@@ -7,8 +7,8 @@ use crate::{
 };
 use axum::{
     Json, Router,
-    extract::{DefaultBodyLimit, Path, Query, State as HttpState},
-    http::StatusCode,
+    extract::{DefaultBodyLimit, FromRequestParts, Path, Query, State as HttpState},
+    http::{StatusCode, request::Parts},
     routing::{get, post},
 };
 use serde::Deserialize;
@@ -28,6 +28,9 @@ pub fn router(app: Arc<App>) -> Router {
         .route("/v1/jobs/{id}/stop", post(stop))
         .route("/v1/jobs/{id}/resume", post(resume))
         .route("/v1/jobs/{id}/result", get(result))
+        .method_not_allowed_fallback(|| async {
+            ApiError(StatusCode::METHOD_NOT_ALLOWED, "Method not allowed".into())
+        })
         .fallback(|| async { ApiError(StatusCode::NOT_FOUND, "Endpoint not found".into()) })
         .layer(DefaultBodyLimit::max(limit))
         .with_state(app)
@@ -95,21 +98,30 @@ async fn list(
     ))
 }
 
-fn get_job(app: &App, id: &str) -> ApiResult<Job> {
-    let id = Uuid::parse_str(id).map_err(ApiError::invalid)?;
+struct JobId(Uuid);
+
+impl<S: Send + Sync> FromRequestParts<S> for JobId {
+    type Rejection = ApiError;
+
+    async fn from_request_parts(parts: &mut Parts, state: &S) -> ApiResult<Self> {
+        let Path(id) = Path::<Uuid>::from_request_parts(parts, state)
+            .await
+            .map_err(ApiError::invalid)?;
+        Ok(Self(id))
+    }
+}
+
+fn get_job(app: &App, id: Uuid) -> ApiResult<Job> {
     app.store.get(id)?.ok_or_else(ApiError::missing)
 }
 
-async fn detail(
-    HttpState(app): HttpState<Arc<App>>,
-    Path(id): Path<String>,
-) -> ApiResult<Json<Job>> {
-    Ok(Json(app.present(get_job(&app, &id)?)))
+async fn detail(HttpState(app): HttpState<Arc<App>>, JobId(id): JobId) -> ApiResult<Json<Job>> {
+    Ok(Json(app.present(get_job(&app, id)?)))
 }
 
-async fn stop(HttpState(app): HttpState<Arc<App>>, Path(id): Path<String>) -> ApiResult<Json<Job>> {
+async fn stop(HttpState(app): HttpState<Arc<App>>, JobId(id): JobId) -> ApiResult<Json<Job>> {
     let _mutation = app.mutation.lock().await;
-    let job = get_job(&app, &id)?;
+    let job = get_job(&app, id)?;
     let job = app.store.update(job.id, |job| {
         job.state = match job.state {
             State::Queued => State::Stopped,
@@ -122,12 +134,9 @@ async fn stop(HttpState(app): HttpState<Arc<App>>, Path(id): Path<String>) -> Ap
     Ok(Json(app.present(job)))
 }
 
-async fn resume(
-    HttpState(app): HttpState<Arc<App>>,
-    Path(id): Path<String>,
-) -> ApiResult<Json<Job>> {
+async fn resume(HttpState(app): HttpState<Arc<App>>, JobId(id): JobId) -> ApiResult<Json<Job>> {
     let _mutation = app.mutation.lock().await;
-    let job = get_job(&app, &id)?;
+    let job = get_job(&app, id)?;
     if job.state == State::Queued {
         return Ok(Json(app.present(job)));
     }
@@ -142,12 +151,9 @@ async fn resume(
     Ok(Json(app.present(job)))
 }
 
-async fn result(
-    HttpState(app): HttpState<Arc<App>>,
-    Path(id): Path<String>,
-) -> ApiResult<Json<Value>> {
+async fn result(HttpState(app): HttpState<Arc<App>>, JobId(id): JobId) -> ApiResult<Json<Value>> {
     let _mutation = app.mutation.lock().await;
-    let job = get_job(&app, &id)?;
+    let job = get_job(&app, id)?;
     if job.state.active() {
         return Err(ApiError::conflict(
             "Stop or finish the job before retrieving results",
@@ -161,12 +167,9 @@ async fn result(
     ))
 }
 
-async fn delete(
-    HttpState(app): HttpState<Arc<App>>,
-    Path(id): Path<String>,
-) -> ApiResult<StatusCode> {
+async fn delete(HttpState(app): HttpState<Arc<App>>, JobId(id): JobId) -> ApiResult<StatusCode> {
     let _mutation = app.mutation.lock().await;
-    let job = get_job(&app, &id)?;
+    let job = get_job(&app, id)?;
     if job.state.active() {
         return Err(ApiError::conflict("Stop the job before deleting it"));
     }

@@ -164,6 +164,64 @@ async fn rejects_invalid_uploads_and_corrupt_checkpoints() {
 }
 
 #[tokio::test]
+#[ignore = "Requires WIFI_TEST_ENGINE; validates admission boundaries and HTTP errors"]
+async fn rejects_unsupported_runtime_before_acceptance() {
+    let server = Server::start().await;
+    let response = server.submit("password", 1, 86401, None).await;
+    assert_eq!(response.status(), 400);
+    let error: Value = response.json().await.unwrap();
+    assert_eq!(error["error"]["code"], 400);
+    assert!(
+        error["error"]["message"]
+            .as_str()
+            .unwrap()
+            .contains("86400")
+    );
+    assert_eq!(server.get("/v1/jobs").await["total"], 0);
+    assert_eq!(
+        std::fs::read_dir(server.data.path().join("staging"))
+            .unwrap()
+            .count(),
+        0
+    );
+    let accepted = accepted(
+        server
+            .submit("synthetic-test-password", 0, 86400, None)
+            .await,
+    )
+    .await;
+    server
+        .wait(accepted["id"].as_str().unwrap(), &["recovered"])
+        .await;
+}
+
+#[tokio::test]
+#[ignore = "Requires WIFI_TEST_ENGINE; validates the error envelope for unsupported methods"]
+async fn method_errors_use_the_json_contract() {
+    let server = Server::start().await;
+    let response = server
+        .http
+        .delete(format!("{}/healthz", server.url))
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(response.status(), 405);
+    let error: Value = response.json().await.unwrap();
+    assert_eq!(error["error"]["code"], 405);
+    for id in ["not-a-uuid", "%FF"] {
+        let response = server
+            .http
+            .get(format!("{}/v1/jobs/{id}", server.url))
+            .send()
+            .await
+            .unwrap();
+        assert_eq!(response.status(), 400);
+        let error: Value = response.json().await.unwrap();
+        assert_eq!(error["error"]["code"], 400);
+    }
+}
+
+#[tokio::test]
 #[ignore = "Requires WIFI_TEST_ENGINE; live multi-SSID throughput and runtime budgets"]
 async fn live_rates_resources_and_runtime_resume() {
     use std::time::{Duration, Instant};

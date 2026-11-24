@@ -33,12 +33,7 @@ jobs:
           target/release/wifi-recovery-api --version
           target/release/wifi-recovery-api --help
       - name: Real CPU engine contract
-        run: |
-          mkdir -p .tools/engine
-          curl --fail --location --silent --show-error https://github.com/securecodelabs/wifi-gpu-public/releases/download/v0.17.2/wifi-gpu-v0.17.2-linux-amd64.tar.gz --output .tools/engine.tar.gz
-          echo '9cb7d3256716195852a8aa89021ff3ff36cb7c03c0720f2b8a8a5b449858b0ec  .tools/engine.tar.gz' | sha256sum --check
-          tar -xzf .tools/engine.tar.gz -C .tools/engine
-          WIFI_TEST_ENGINE="$PWD/.tools/engine/bin/wifi-gpu" WIFI_TEST_API="$PWD/target/release/wifi-recovery-api" cargo +1.93.0 test --locked --test engine_integration -- --ignored --test-threads=1
+        run: bash .github/engine-contract.sh target/release/wifi-recovery-api
   security:
     runs-on: ubuntu-26.04
     timeout-minutes: 20
