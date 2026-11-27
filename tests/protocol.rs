@@ -33,6 +33,7 @@ fn attempt_budget_and_rates_have_independent_freshness() {
         pattern: "password?d".into(),
         candidate_limit: 10,
         runtime_seconds: 30,
+        ..Search::default()
     };
     let mut sample = Observation {
         start_offset: 50,

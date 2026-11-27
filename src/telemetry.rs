@@ -160,6 +160,7 @@ mod tests {
                 pattern: "password".into(),
                 runtime_seconds: 0,
                 candidate_limit: 0,
+                ..Search::default()
             },
         );
         assert_eq!(sample.progress.tested_candidates, None);

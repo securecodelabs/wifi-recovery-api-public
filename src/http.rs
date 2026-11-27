@@ -64,6 +64,10 @@ async fn system(HttpState(app): HttpState<Arc<App>>) -> ApiResult<Json<Value>> {
 #[serde(deny_unknown_fields)]
 struct PreviewRequest {
     pattern: String,
+    #[serde(default)]
+    increment: bool,
+    increment_min: Option<u8>,
+    increment_max: Option<u8>,
 }
 
 async fn preview(
@@ -71,7 +75,13 @@ async fn preview(
 ) -> ApiResult<Json<pattern::Preview>> {
     let Json(body) = body.map_err(ApiError::invalid)?;
     Ok(Json(
-        pattern::preview(&body.pattern).map_err(ApiError::invalid)?,
+        pattern::preview_range(
+            &body.pattern,
+            body.increment,
+            body.increment_min,
+            body.increment_max,
+        )
+        .map_err(ApiError::invalid)?,
     ))
 }
 

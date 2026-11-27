@@ -14,6 +14,39 @@ The job's `gpu_batch` is frozen on acceptance. Automatic selection uses 262144 f
 
 Input and its containing directory are synchronized before the SQLite transaction is acknowledged. SQLite uses WAL and FULL synchronization. Startup removes abandoned staging files and job directories that have no committed database entry. Deletion retains the idempotency tombstone.
 
+## Incremental patterns
+
+Both multipart search metadata and the JSON preview request accept `increment`
+(default `false`), `increment_min` and `increment_max`. Bounds require
+`increment: true`, are whole numbers within 8–63, and must be ordered. The
+minimum defaults to 8; the maximum defaults to the supplied pattern length and
+is capped at that length. A pattern shorter than the minimum is rejected.
+
+For example, `{"pattern":"Home?d?d?d?d?d?d","increment":true,"increment_min":8,"increment_max":10}`
+searches `Home` plus four, five, then six digits. Each length uses a prefix of
+the supplied pattern's byte positions, including literals; no positions are
+appended. UTF-8 literals may be split at a byte boundary. Within each length,
+the rightmost position changes fastest. The combined count must fit u64.
+
+Preview includes `min_password_length_bytes`, `max_password_length_bytes` and
+`lengths`, an array of `{password_length_bytes, candidate_count}`. Its
+`candidate_count` is the combined count, and samples follow the combined search
+order. `password_length_bytes` is a number for a single length and `null` for a
+range. The example above contains 1,110,000 candidates across three lengths.
+
+An incremental search is one job. Its runtime/candidate budget covers the whole
+range per attempt; resuming grants a new attempt budget and continues from the
+combined checkpoint. Effective bounds are stored in the immutable search and
+normalized for idempotency, so omitted defaults and equivalent explicit bounds
+are identical. Fixed-length settings omit the new fields when serialized,
+preserving existing saved jobs and idempotency keys.
+
+Incremental submissions require an engine built with `--increment` support.
+The API probes this capability and rejects unsupported submissions with 400
+before creating a job. Fixed-length jobs continue to work with published WiFi
+GPU v0.17.2. Incremental use requires updated API, engine and client builds;
+the existing published artifacts do not include this feature.
+
 ## States and attempts
 
 States: `queued`, `running`, `stopping`, `stopped`, `interrupted`, `limit_reached`, `recovered`, `exhausted`, `failed`. `running` includes preparation and device initialization. Stage and state are separate fields. Exhaustion and limits do not mean recovery.

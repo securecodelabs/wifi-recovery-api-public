@@ -14,6 +14,7 @@ fn job() -> Job {
             pattern: "password".into(),
             runtime_seconds: 0,
             candidate_limit: 0,
+            ..Search::default()
         },
         filename: "synthetic.hc22000".into(),
         input_sha256: "00".repeat(32),

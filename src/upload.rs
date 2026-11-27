@@ -116,12 +116,12 @@ async fn receive(app: &App, mut body: Multipart) -> Result<Upload> {
                     );
                     bytes.extend_from_slice(&chunk);
                 }
-                let value: Search = serde_json::from_slice(&bytes)?;
+                let mut value: Search = serde_json::from_slice(&bytes)?;
                 ensure!(
                     value.runtime_seconds <= 86400,
                     "Runtime must be 0-86400 seconds (0 is unlimited)"
                 );
-                pattern::preview(&value.pattern)?;
+                pattern::normalize(&mut value)?;
                 search = Some(value);
             }
             "file" if uploaded.is_none() => {
@@ -139,6 +139,9 @@ async fn receive(app: &App, mut body: Multipart) -> Result<Upload> {
     }
     let search = search.context("Missing metadata field")?;
     let (filename, bytes, digest) = uploaded.context("Missing file field")?;
+    if search.increment {
+        crate::engine::require_increment(&app.config).await?;
+    }
     let gpu_batch = inspect(app, &staging.path().join("input.hc22000")).await?;
     sync_directory(staging.path())?;
     Ok(Upload {

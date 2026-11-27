@@ -3,7 +3,7 @@ use uuid::Uuid;
 
 pub const CONTRACT: u32 = 1;
 
-#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct Search {
     pub pattern: String,
@@ -11,6 +11,12 @@ pub struct Search {
     pub runtime_seconds: u64,
     #[serde(default)]
     pub candidate_limit: u64,
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub increment: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub increment_min: Option<u8>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub increment_max: Option<u8>,
 }
 
 #[derive(Clone, Copy, Debug, Deserialize, Serialize, PartialEq, Eq)]

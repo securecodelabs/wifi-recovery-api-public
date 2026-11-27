@@ -14,6 +14,34 @@ async fn accepted(response: reqwest::Response) -> Value {
 }
 
 #[tokio::test]
+#[ignore = "Requires WIFI_TEST_ENGINE; checks advertised incremental capability at admission"]
+async fn incremental_capability_is_checked_before_acceptance() {
+    let engine = std::env::var_os("WIFI_TEST_ENGINE").unwrap();
+    let help = std::process::Command::new(engine)
+        .arg("--help")
+        .output()
+        .unwrap();
+    assert!(help.status.success());
+    let supports_increment = String::from_utf8_lossy(&help.stdout).contains("--increment");
+    let server = Server::start().await;
+    let response = server
+        .submit_search(
+            serde_json::json!({"pattern":"wrongpass", "increment":true}),
+            None,
+            INPUT.to_vec(),
+        )
+        .await;
+    assert_eq!(
+        response.status(),
+        if supports_increment { 201 } else { 400 }
+    );
+    if !supports_increment {
+        assert!(response.text().await.unwrap().contains("updated WiFi GPU"));
+        assert_eq!(server.get("/v1/jobs").await["total"], 0);
+    }
+}
+
+#[tokio::test]
 #[ignore = "Requires WIFI_TEST_ENGINE; exercises the real engine executable"]
 async fn recovery_results_upload_identity_and_retries() {
     let mut server = Server::start().await;

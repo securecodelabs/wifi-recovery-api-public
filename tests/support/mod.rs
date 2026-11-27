@@ -83,12 +83,22 @@ impl Server {
         key: Option<Uuid>,
         bytes: Vec<u8>,
     ) -> Response {
+        self.submit_search(
+            json!({"pattern":pattern,"candidate_limit":limit,"runtime_seconds":runtime}),
+            key,
+            bytes,
+        )
+        .await
+    }
+
+    pub async fn submit_search(
+        &self,
+        search: Value,
+        key: Option<Uuid>,
+        bytes: Vec<u8>,
+    ) -> Response {
         let form = multipart::Form::new()
-            .text(
-                "metadata",
-                json!({"pattern":pattern,"candidate_limit":limit,"runtime_seconds":runtime})
-                    .to_string(),
-            )
+            .text("metadata", search.to_string())
             .part(
                 "file",
                 multipart::Part::bytes(bytes).file_name("synthetic.hc22000"),

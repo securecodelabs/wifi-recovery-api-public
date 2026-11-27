@@ -44,6 +44,12 @@ The returned UUID identifies the same job across stops, resumes and API restarts
 
 See [the contract](docs/contract.md) for states, timing, limits and errors.
 
+For variable lengths, add `"increment":true`, `"increment_min":8` and
+`"increment_max":10` to the search metadata or preview JSON. A pattern such as
+`Home?d?d?d?d?d?d` then searches lengths 8, 9 and 10 in one resumable job.
+See [incremental patterns](docs/contract.md#incremental-patterns) for byte-length
+semantics, defaults and engine compatibility.
+
 ## Build and check
 
 ```sh
@@ -55,7 +61,7 @@ WIFI_TEST_ENGINE=/path/to/wifi-gpu WIFI_TEST_API="$PWD/target/release/wifi-recov
   cargo +1.93.0 test --locked --test engine_integration -- --ignored --test-threads=1
 ```
 
-Real-engine tests are explicitly ignored by the ordinary test command and explicitly run in Linux CI using the checksum-pinned public engine. Set `WIFI_TEST_HIP=1` to exercise actual AMD hardware. All fixtures are synthetic. The additional SSID fixture and converter fixture originate from the public WiFi GPU test suite; application code and test harnesses are fresh implementations.
+Real-engine tests are explicitly ignored by the ordinary test command and explicitly run in Linux CI using the checksum-pinned public engine. With a locally built engine supporting `--increment`, also run the command above with `--test increment` to test preview, range boundaries, durable settings and resume. Set `WIFI_TEST_HIP=1` to exercise actual AMD hardware. All fixtures are synthetic. The additional SSID fixture and converter fixture originate from the public WiFi GPU test suite; application code and test harnesses are fresh implementations.
 
 The separate hardware performance gate runs two 67,108,864-candidate searches through the API and requires at least 650 kH/s sustained: `WIFI_TEST_HIP=1 WIFI_TEST_ENGINE=/path/to/wifi-gpu cargo test --release --test performance -- --ignored --nocapture`. It uses one exact-nonce WPA2 record and a ten-byte uppercase hexadecimal pattern. See [measured validation](docs/validation.md); performance depends on the input, runtime and hardware.
 

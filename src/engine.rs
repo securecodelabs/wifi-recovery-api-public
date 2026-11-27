@@ -39,6 +39,15 @@ pub async fn ready(config: &Config) -> Result<()> {
     Ok(())
 }
 
+pub async fn require_increment(config: &Config) -> Result<()> {
+    let help = process::probe(&config.engine, &["--help".into()], Duration::from_secs(10)).await?;
+    ensure!(
+        help.contains("--increment"),
+        "Incremental searches require an updated WiFi GPU build with --increment support"
+    );
+    Ok(())
+}
+
 pub fn arguments(config: &Config, job: &Job, dir: &Path) -> Vec<OsString> {
     let mut args: Vec<OsString> = ["recover", "--hashes"]
         .into_iter()
@@ -58,6 +67,17 @@ pub fn arguments(config: &Config, job: &Job, dir: &Path) -> Vec<OsString> {
         "--output".into(),
         dir.join("result.json").into_os_string(),
     ]);
+    if job.search.increment {
+        args.push("--increment".into());
+        for (flag, value) in [
+            ("--increment-min", job.search.increment_min),
+            ("--increment-max", job.search.increment_max),
+        ] {
+            if let Some(value) = value {
+                args.extend([flag.into(), value.to_string().into()]);
+            }
+        }
+    }
     args.push(
         if job.attempts.len() > 1 {
             "--resume"
